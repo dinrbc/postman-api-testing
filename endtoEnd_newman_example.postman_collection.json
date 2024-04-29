@@ -1,0 +1,447 @@
+{
+	"info": {
+		"_postman_id": "0b1db636-c695-4474-a4d0-72912ee767c9",
+		"name": "endtoEnd_newman_example",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "14493735"
+	},
+	"item": [
+		{
+			"name": "End to End API Testing",
+			"item": [
+				{
+					"name": "Create story issue type in exisiting project",
+					"item": [
+						{
+							"name": "[1] GetProjects Copy",
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"console.clear();"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"const response = pm.response.json();\r",
+											"let projects = response.values;\r",
+											"console.log(projects);\r",
+											"const projectNames = projects.map((projectname) => projectname.name);\r",
+											"console.log(projectNames);\r",
+											"pm.collectionVariables.set('projectID', projects[projectNames.indexOf('SupportWorkspace')].id);\r",
+											"pm.collectionVariables.set('projectKey', projects[projectNames.indexOf('SupportWorkspace')].key);\r",
+											"postman.setNextRequest(\"[2] GetAllIssueTypesForProject Copy\");"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"auth": {
+									"type": "basic",
+									"basic": [
+										{
+											"key": "password",
+											"value": "{{jiraToken}}",
+											"type": "string"
+										},
+										{
+											"key": "username",
+											"value": "{{username}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{hostname}}/rest/api/3/project/search",
+									"host": [
+										"{{hostname}}"
+									],
+									"path": [
+										"rest",
+										"api",
+										"3",
+										"project",
+										"search"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "[2] GetAllIssueTypesForProject Copy",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"const response = pm.response.json();\r",
+											"const desiredValues = response.map((value) => value.name);\r",
+											"console.log(desiredValues);\r",
+											"console.log(pm.iterationData.get(\"issueName\"));\r",
+											"console.log(response[desiredValues.indexOf(pm.iterationData.get(\"issueName\"))]);\r",
+											"pm.collectionVariables.set('issueID', response[desiredValues.indexOf(pm.variables.get('issueName'))].id);\r",
+											"/*response.forEach ((type) => {\r",
+											"    var stripped = type.untranslatedName.replace(/\\s+/g, '')\r",
+											"    console.log(stripped);\r",
+											"    console.log(type.id);\r",
+											"    pm.collectionVariables.set((stripped)+\"ID\", type.id)\r",
+											"})*/\r",
+											"postman.setNextRequest(\"[3] GetUser Copy\");"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"auth": {
+									"type": "basic",
+									"basic": [
+										{
+											"key": "password",
+											"value": "{{jiraToken}}",
+											"type": "string"
+										},
+										{
+											"key": "username",
+											"value": "{{username}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{hostname}}/rest/api/3/issuetype/project?projectId={{projectID}}",
+									"host": [
+										"{{hostname}}"
+									],
+									"path": [
+										"rest",
+										"api",
+										"3",
+										"issuetype",
+										"project"
+									],
+									"query": [
+										{
+											"key": "projectId",
+											"value": "{{projectID}}"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "[3] GetUser Copy",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"const response = pm.response.json();\r",
+											"var accId = null;\r",
+											"console.log(response);\r",
+											"response.forEach((user) => {\r",
+											"    if (user.emailAddress === 'andreyydx1@yandex.ru') {\r",
+											"        accId = user.accountId\r",
+											"    }\r",
+											"} )\r",
+											"pm.collectionVariables.set('accountId', accId);\r",
+											"postman.setNextRequest(\"[4] Create Issue Type Story\");"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"auth": {
+									"type": "basic",
+									"basic": [
+										{
+											"key": "password",
+											"value": "{{jiraToken}}",
+											"type": "string"
+										},
+										{
+											"key": "username",
+											"value": "{{username}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{hostname}}/rest/api/3/user/assignable/multiProjectSearch?projectKeys={{projectKey}}",
+									"host": [
+										"{{hostname}}"
+									],
+									"path": [
+										"rest",
+										"api",
+										"3",
+										"user",
+										"assignable",
+										"multiProjectSearch"
+									],
+									"query": [
+										{
+											"key": "projectKeys",
+											"value": "{{projectKey}}"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "[4] Create Issue Type Story",
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"pm.collectionVariables.set('RandomNumber', Math.floor(Math.random() * 1000));\r",
+											"//var title = pm.collectionVariables.replaceIn(\"{{$randomPhrase}}\");\r",
+											"pm.collectionVariables.set(\"issueTitle\", pm.variables.get('issueTitle'));"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"// Fixed variable redeclaration issue",
+											"pm.test(\"Status code is 201 and success\", function () {",
+											"    pm.response.to.have.status(201);",
+											"    pm.response.to.be.success;",
+											"});",
+											"",
+											"const responseJson = pm.response.json();",
+											"console.log(responseJson);",
+											"pm.collectionVariables.set(\"freshIssueID\", responseJson.id);",
+											"pm.collectionVariables.set(\"freshIssueKey\", responseJson.key);",
+											"postman.setNextRequest(\"[5] GetIssue Copy\");"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"auth": {
+									"type": "basic",
+									"basic": [
+										{
+											"key": "password",
+											"value": "{{jiraToken}}",
+											"type": "string"
+										},
+										{
+											"key": "username",
+											"value": "{{username}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n  \"fields\": {\r\n    \"issuetype\": {\r\n      \"id\": \"{{issueID}}\"\r\n    },\r\n    \"project\": {\r\n      \"id\": \"{{projectID}}\"\r\n    },\r\n    \"reporter\": {\r\n      \"id\": \"{{accountId}}\"\r\n    },\r\n    \r\n    \"summary\": \"{{issueTitle}}\"\r\n  }\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{hostname}}/rest/api/3/issue",
+									"host": [
+										"{{hostname}}"
+									],
+									"path": [
+										"rest",
+										"api",
+										"3",
+										"issue"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "[5] GetIssue Copy",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test('Status code is 200', function () {",
+											"    pm.response.to.have.status(200);",
+											"})",
+											"",
+											"const responseJson = pm.response.json();",
+											"",
+											"pm.test(\"Field value didnt change\", function () {",
+											"    pm.expect(responseJson.fields.summary).to.equal(pm.collectionVariables.get(\"issueTitle\"));",
+											"});",
+											"",
+											"console.log(pm.collectionVariables.get(\"issueTitle\"));",
+											"console.log(responseJson.fields.summary);",
+											"postman.setNextRequest(null);",
+											"",
+											"",
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"auth": {
+									"type": "basic",
+									"basic": [
+										{
+											"key": "password",
+											"value": "{{jiraToken}}",
+											"type": "string"
+										},
+										{
+											"key": "username",
+											"value": "{{username}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{hostname}}/rest/api/3/issue/:issueIdOrKey",
+									"host": [
+										"{{hostname}}"
+									],
+									"path": [
+										"rest",
+										"api",
+										"3",
+										"issue",
+										":issueIdOrKey"
+									],
+									"variable": [
+										{
+											"key": "issueIdOrKey",
+											"value": "{{freshIssueID}}"
+										}
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				}
+			]
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "projectID",
+			"value": "10001"
+		},
+		{
+			"key": "projectKey",
+			"value": ""
+		},
+		{
+			"key": "TaskID",
+			"value": ""
+		},
+		{
+			"key": "ЭпикID",
+			"value": ""
+		},
+		{
+			"key": "ПодзадачаID",
+			"value": ""
+		},
+		{
+			"key": "БагID",
+			"value": ""
+		},
+		{
+			"key": "ЗаданиеID",
+			"value": ""
+		},
+		{
+			"key": "ИсторияID",
+			"value": ""
+		},
+		{
+			"key": "accountId",
+			"value": ""
+		},
+		{
+			"key": "RandomNumber",
+			"value": ""
+		},
+		{
+			"key": "issueTitle",
+			"value": ""
+		},
+		{
+			"key": "freshIssueID",
+			"value": ""
+		},
+		{
+			"key": "freshIssueKey",
+			"value": ""
+		},
+		{
+			"key": "issueID",
+			"value": ""
+		},
+		{
+			"key": "issueName",
+			"value": "",
+			"type": "string"
+		}
+	]
+}
