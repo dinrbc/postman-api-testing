@@ -1,0 +1,11 @@
+[{
+"issueName": "Story",
+"issueTitle": "We are just created story via json newman"
+},
+	{"issueName": "Bug",
+	"issueTitle": "We are just created bug via json newman"
+	},
+		{"issueName": "Task",
+		"issueTitle": "We are just created task via json newman"
+		}
+]
